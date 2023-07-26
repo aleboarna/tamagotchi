@@ -2,22 +2,30 @@ import { ReactComponent as SuperWoman } from '../assets/super-woman.svg';
 import { LevelBar } from './level-bar';
 import { useEffect, useRef, useState } from 'react';
 import RetryModal from './retry-modal';
-import { Link } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { getLifeStage } from './right-lifecycle';
 import { getStageProps } from './stage-modifier';
 
 export function App() {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const { name } = location.state || {};
+  useEffect(() => {
+    if (!name) navigate('/login');
+  }, [name]);
   const [healthLevel, setHealthLevel] = useState(
-    Number(localStorage.getItem('health')) || 100
+    Number(localStorage.getItem(`${name}-health`)) || 100
   );
   const [happinessLevel, setHappinessLevel] = useState(
-    Number(localStorage.getItem('happiness')) || 100
+    Number(localStorage.getItem(`${name}-happiness`)) || 100
   );
   const [isModalOpen, setIsModalOpen] = useState(
     happinessLevel === 0 || healthLevel === 0
   );
 
-  const [age, setAge] = useState(Number(localStorage.getItem('age')) || 3);
+  const [age, setAge] = useState(
+    Number(localStorage.getItem(`${name}-age`)) || 3
+  );
   const modifiers = getStageProps(getLifeStage(age));
   const [countTries, setCountTries] = useState(0);
 
@@ -50,7 +58,7 @@ export function App() {
         setIsModalOpen(true);
       } else {
         setHealthLevel((prevState) => prevState - 1);
-        localStorage.setItem('health', `${healthRef.current - 1}`);
+        localStorage.setItem(`${name}-health`, `${healthRef.current - 1}`);
       }
     }, 500 * modifiers.healthModifier);
     const happinessTimer = window.setInterval(() => {
@@ -61,12 +69,15 @@ export function App() {
         setIsModalOpen(true);
       } else {
         setHappinessLevel((prevState) => prevState - 1);
-        localStorage.setItem('happiness', `${happinessRef.current - 1}`);
+        localStorage.setItem(
+          `${name}-happiness`,
+          `${happinessRef.current - 1}`
+        );
       }
     }, 500 * modifiers.happinessModifier);
     const ageTimer = window.setInterval(() => {
       setAge((prevState) => prevState + 1);
-      localStorage.setItem('age', `${ageRef.current + 1}`);
+      localStorage.setItem(`${name}-age`, `${ageRef.current + 1}`);
     }, 10000);
 
     return () => {
@@ -80,9 +91,9 @@ export function App() {
     setHappinessLevel(100);
     setHealthLevel(100);
     setAge(3);
-    localStorage.setItem('happiness', '100');
-    localStorage.setItem('health', '100');
-    localStorage.setItem('age', '3');
+    localStorage.setItem(`${name}-happiness`, '100');
+    localStorage.setItem(`${name}-health`, '100');
+    localStorage.setItem(`${name}-age`, '3');
     setIsModalOpen(false);
     setCountTries((prevState) => prevState + 1);
   };
@@ -94,7 +105,7 @@ export function App() {
           className="bg-transparent hover:bg-blue-500 text-blue-700 font-semibold hover:text-white py-2 px-4 border border-blue-500 hover:border-transparent rounded"
           to={'/login'}
         >
-          Log in
+          Change player
         </Link>
       </div>
       <RetryModal

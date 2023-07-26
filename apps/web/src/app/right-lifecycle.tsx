@@ -12,4 +12,3 @@ export const getLifeStage = (age: number) => {
     return LifeStage.pregnant;
   } else return LifeStage.woman;
 };
-//need to return right woman type, different images && time passes differently for health & happiness

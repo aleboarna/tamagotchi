@@ -52,8 +52,8 @@ export default function RetryModal(props: {
                       </Dialog.Title>
                       <div className="mt-2">
                         <p className="text-sm text-gray-500">
-                          Oh! Seems like evil prevailed this time around. Wanna
-                          try again?
+                          Oh! Seems like you weren't careful enough. Wanna try
+                          again?
                         </p>
                       </div>
                     </div>
