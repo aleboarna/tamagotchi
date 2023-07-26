@@ -13,7 +13,7 @@ export const LevelBar = (props: { level: number; name: string }) => {
         <div
           className="bg-blue-600 h-2.5 rounded-full"
           style={{ width: `${props.level}%` }}
-        ></div>
+        />
       </div>
     </div>
   );
