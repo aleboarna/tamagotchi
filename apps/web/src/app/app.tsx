@@ -1,51 +1,82 @@
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import styles from './app.module.css';
 import { ReactComponent as SuperWoman } from '../assets/super-woman.svg';
 import { LevelBar } from './level-bar';
 import { useEffect, useState } from 'react';
+import RetryModal from './retry-modal';
 
 export function App() {
-  const [healthLevel, setHealthLevel] = useState(45);
-  const [happinessLevel, setHappinessLevel] = useState(60);
-
+  const [healthLevel, setHealthLevel] = useState(
+    Number(localStorage.getItem('health')) || 100
+  );
+  const [happinessLevel, setHappinessLevel] = useState(
+    Number(localStorage.getItem('happiness')) || 100
+  );
+  const [isModalOpen, setIsModalOpen] = useState(
+    happinessLevel === 0 || healthLevel === 0
+  );
   const increaseHealth = () => {
-    setHealthLevel((prevState) => prevState + 5);
+    setHealthLevel(healthLevel + 5);
   };
   const increaseHappiness = () => {
-    setHappinessLevel((prevState) => prevState + 5);
+    setHappinessLevel(happinessLevel + 5);
   };
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setHappinessLevel((prevState) => prevState - 1);
-      setHealthLevel((prevState) => prevState - 1);
+    const timer = window.setInterval(() => {
+      setHappinessLevel(happinessLevel - 1);
+      setHealthLevel(healthLevel - 1);
+      localStorage.setItem('happiness', `${happinessLevel}`);
+      localStorage.setItem('health', `${healthLevel}`);
     }, 3000);
     if (happinessLevel === 0 || healthLevel === 0) {
-      return clearTimeout(timer);
+      setIsModalOpen(true);
+      return window.clearInterval(timer);
     }
-    return () => clearTimeout(timer);
-  });
+    return () => window.clearInterval(timer);
+  }, [healthLevel, happinessLevel]);
+
+  const onRetryModal = () => {
+    setHappinessLevel(100);
+    setHealthLevel(100);
+    setIsModalOpen(false);
+  };
+
   return (
     <div className="container mx-auto box-border w-1/3">
+      <RetryModal
+        onRetryModal={onRetryModal}
+        isOpen={isModalOpen}
+        onCloseModal={() => setIsModalOpen(false)}
+      />
       <h1 className="text-center text-xl pt-4 pb-10">Superwoman</h1>
       <div className="flex justify-evenly">
         <LevelBar level={healthLevel} name={'Health'} />
         <LevelBar level={happinessLevel} name={'Happiness'} />
       </div>
       <SuperWoman className="container" />
-      <div className="flex justify-evenly">
-        <button
-          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full"
-          onClick={increaseHealth}
-        >
-          Feed
-        </button>
-        <button
-          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full"
-          onClick={increaseHappiness}
-        >
-          Play
-        </button>
-      </div>
+      {healthLevel === 0 || happinessLevel === 0 ? (
+        <div className="flex justify-center">
+          <button
+            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full"
+            onClick={onRetryModal}
+          >
+            Try again
+          </button>
+        </div>
+      ) : (
+        <div className="flex justify-evenly">
+          <button
+            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full"
+            onClick={increaseHealth}
+          >
+            Help
+          </button>
+          <button
+            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full"
+            onClick={increaseHappiness}
+          >
+            Empower
+          </button>
+        </div>
+      )}
     </div>
   );
 }
