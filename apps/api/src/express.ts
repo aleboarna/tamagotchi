@@ -1,11 +1,4 @@
-import express from 'express';
-import * as path from 'path';
-
-const app = express();
-
-app.get('/api', (req, res) => {
-  res.send({ message: 'Welcome to api!' });
-});
+import { app } from './server';
 
 const port = process.env.PORT || 3333;
 const server = app.listen(port, () => {

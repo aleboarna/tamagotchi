@@ -114,7 +114,7 @@ export function App() {
         onCloseModal={() => setIsModalOpen(false)}
       />
       <div className="container mx-auto box-border w-1/3">
-        <h1 className="text-center text-xl pt-4 pb-10">Superwoman</h1>
+        <h1 className="text-center text-xl pt-4 pb-10">EmpowHER</h1>
         <div className="flex justify-evenly">
           <LevelBar level={healthLevel} name={'Health'} />
           <LevelBar level={happinessLevel} name={'Happiness'} />

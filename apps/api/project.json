@@ -4,7 +4,7 @@
   "sourceRoot": "apps/api/src",
   "projectType": "application",
   "targets": {
-    "build": {
+    "build:express": {
       "executor": "@nx/webpack:webpack",
       "outputs": ["{options.outputPath}"],
       "defaultConfiguration": "production",
@@ -12,7 +12,25 @@
         "target": "node",
         "compiler": "tsc",
         "outputPath": "dist/apps/api",
-        "main": "apps/api/src/main.ts",
+        "main": "apps/api/src/express.ts",
+        "tsConfig": "apps/api/tsconfig.app.json",
+        "isolatedConfig": true,
+        "webpackConfig": "apps/api/webpack.config.js"
+      },
+      "configurations": {
+        "development": {},
+        "production": {}
+      }
+    },
+    "build:lambda": {
+      "executor": "@nx/webpack:webpack",
+      "outputs": ["{options.outputPath}"],
+      "defaultConfiguration": "production",
+      "options": {
+        "target": "node",
+        "compiler": "tsc",
+        "outputPath": "dist/apps/api",
+        "main": "apps/api/src/lambda.ts",
         "tsConfig": "apps/api/tsconfig.app.json",
         "isolatedConfig": true,
         "webpackConfig": "apps/api/webpack.config.js"
@@ -26,14 +44,14 @@
       "executor": "@nx/js:node",
       "defaultConfiguration": "development",
       "options": {
-        "buildTarget": "api:build"
+        "buildTarget": "api:build:express"
       },
       "configurations": {
         "development": {
-          "buildTarget": "api:build:development"
+          "buildTarget": "api:build:express:development"
         },
         "production": {
-          "buildTarget": "api:build:production"
+          "buildTarget": "api:build:express:production"
         }
       }
     },
