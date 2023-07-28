@@ -1,45 +1,68 @@
 import { LevelBar } from './level-bar';
 import { useEffect, useRef, useState } from 'react';
-import RetryModal from './retry-modal';
+import RetryModal, { ModalReason } from './retry-modal';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { getLifeStage } from './right-lifecycle';
 import { getStageProps } from './stage-modifier';
 import { ReactComponent as People } from '../assets/people.svg';
 import { GlobalSwitch } from './global-switch';
+import { EntryCreateRequestPayload } from '@tamagotchi/types';
+import axios, { AxiosResponse } from 'axios';
+import { useMutation } from 'react-query';
+import { env } from '@headlessui/react/dist/utils/env';
+import { ENVIRONMENT } from '../environments/environment';
 
 export function App() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { name } = location.state || {};
-  const [toggleGlobal, setToggleGlobal] = useState(false);
+  const { name: userName }: { name: string } = location.state || {};
 
   useEffect(() => {
-    if (!name) navigate('/login');
-  }, [name]);
+    if (!userName) navigate('/login');
+  }, [userName]);
+
+  const saveMutation = useMutation(
+    (props: {
+      userName: string;
+      retryCount: number;
+      recordLifeCycles: number;
+    }) =>
+      axios.post<
+        EntryCreateRequestPayload,
+        AxiosResponse<EntryCreateRequestPayload>
+      >(`${ENVIRONMENT.API_URL}/api/v1/add`, props)
+  );
+
+  const getMutation = useMutation((props: { userName: string }) =>
+    axios.get<EntryCreateRequestPayload>(
+      `${ENVIRONMENT.API_URL}/api/v1/user/${props.userName}`
+    )
+  );
+
   const [isVisible, setIsVisible] = useState(true);
 
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setIsVisible((prevIsVisible) => !prevIsVisible);
-    }, 1800);
+  const [toggleGlobal, setToggleGlobal] = useState(false);
+  const [firstTimeGlobal, setFirstTimeGlobal] = useState(true);
 
-    // Clean up the timer when the component is unmounted
-    return () => clearInterval(timer);
-  }, []);
   const [healthLevel, setHealthLevel] = useState(
-    Number(localStorage.getItem(`${name}-health`)) || 100
+    Number(localStorage.getItem(`${userName}-health`)) || 100
   );
   const [happinessLevel, setHappinessLevel] = useState(
-    Number(localStorage.getItem(`${name}-happiness`)) || 100
+    Number(localStorage.getItem(`${userName}-happiness`)) || 100
   );
   const [isModalOpen, setIsModalOpen] = useState(
     happinessLevel === 0 || healthLevel === 0
   );
 
   const [age, setAge] = useState(
-    Number(localStorage.getItem(`${name}-age`)) || 3
+    Number(localStorage.getItem(`${userName}-age`)) || 3
   );
-  const [countTries, setCountTries] = useState(0);
+
+  //get from  dynamodb or localstorage, if not in localstorage then 1
+  const [retryCount, setRetryCount] = useState(1);
+  const [maxLifeCycles, setMaxLifeCycles] = useState(1);
+  const [recordLifeCycles, setRecordLifeCycles] = useState(1);
+
   const modifiers = getStageProps(getLifeStage(age));
 
   const increaseHealth = () => {
@@ -71,7 +94,7 @@ export function App() {
         setIsModalOpen(true);
       } else {
         setHealthLevel((prevState) => prevState - 1);
-        localStorage.setItem(`${name}-health`, `${healthRef.current - 1}`);
+        localStorage.setItem(`${userName}-health`, `${healthRef.current - 1}`);
       }
     }, 500 * modifiers.healthModifier);
     const happinessTimer = window.setInterval(() => {
@@ -83,14 +106,14 @@ export function App() {
       } else {
         setHappinessLevel((prevState) => prevState - 1);
         localStorage.setItem(
-          `${name}-happiness`,
+          `${userName}-happiness`,
           `${happinessRef.current - 1}`
         );
       }
     }, 500 * modifiers.happinessModifier);
     const ageTimer = window.setInterval(() => {
       setAge((prevState) => prevState + 1);
-      localStorage.setItem(`${name}-age`, `${ageRef.current + 1}`);
+      localStorage.setItem(`${userName}-age`, `${ageRef.current + 1}`);
     }, 10000);
 
     return () => {
@@ -98,17 +121,66 @@ export function App() {
       window.clearInterval(happinessTimer);
       window.clearInterval(ageTimer);
     };
-  }, [countTries]);
+  }, [retryCount]);
 
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setIsVisible((prevIsVisible) => !prevIsVisible);
+    }, 1800);
+
+    // Clean up the timer when the component is unmounted
+    return () => clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
+    if (toggleGlobal && firstTimeGlobal) {
+      getMutation.mutate(
+        { userName },
+        {
+          onSuccess: (response) => {
+            if (response.data.recordLifeCycles > recordLifeCycles) {
+              setRecordLifeCycles(response.data.recordLifeCycles);
+            }
+            setRetryCount(
+              (prevState) => prevState + Number(response.data.retryCount)
+            );
+            setFirstTimeGlobal(false);
+          },
+          onError: (error) => {
+            console.error(error);
+            setFirstTimeGlobal(false);
+          },
+        }
+      );
+    }
+  }, [toggleGlobal]);
+  useEffect(() => {
+    if (toggleGlobal && !firstTimeGlobal) {
+      saveMutation.mutate({ userName, retryCount, recordLifeCycles });
+    }
+  }, [toggleGlobal, firstTimeGlobal]);
   const onRetryModal = () => {
+    commonReset();
+    setMaxLifeCycles(1);
+  };
+
+  const commonReset = () => {
     setHappinessLevel(100);
     setHealthLevel(100);
     setAge(3);
-    localStorage.setItem(`${name}-happiness`, '100');
-    localStorage.setItem(`${name}-health`, '100');
-    localStorage.setItem(`${name}-age`, '3');
+    localStorage.setItem(`${userName}-happiness`, '100');
+    localStorage.setItem(`${userName}-health`, '100');
+    localStorage.setItem(`${userName}-age`, '3');
     setIsModalOpen(false);
-    setCountTries((prevState) => prevState + 1);
+    setRetryCount((prevState) => prevState + 1);
+  };
+
+  const onNewCycle = () => {
+    commonReset();
+    if (maxLifeCycles + 1 > recordLifeCycles) {
+      setRecordLifeCycles((prevState) => prevState + 1);
+    }
+    setMaxLifeCycles((prevState) => prevState + 1);
   };
 
   const setGlobalToggle = () => {
@@ -135,7 +207,9 @@ export function App() {
       <RetryModal
         onRetryModal={onRetryModal}
         isOpen={isModalOpen}
+        onNewCycle={onNewCycle}
         onCloseModal={() => setIsModalOpen(false)}
+        modalReason={ModalReason.failed}
       />
       <div className={'flex justify-evenly w-2/5 pb-7'}>
         <LevelBar level={healthLevel} name={'Health'} />
@@ -143,8 +217,9 @@ export function App() {
         <LevelBar level={age} name={'Age'} />
       </div>
       <div className={'flex flex-row justify-evenly'}>
-        {' '}
-        <div>leaderboard</div>
+        <div>
+          leaderboard total tries {retryCount} lifecycles {recordLifeCycles}
+        </div>
         <div className={'w-1/2 pb-10'}>
           <modifiers.image />
         </div>

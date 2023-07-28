@@ -18,7 +18,7 @@ export class StorageService {
 }
 export class DynamoDbStorage implements IStorage {
   private connection;
-  private tableName = `empowher-users`;
+  private tableName = `empowher-users-` + process.env.ENV || 'prod';
 
   constructor() {
     config.update({ region: process.env.AWS_REGION || 'eu-central-1' });
@@ -31,11 +31,8 @@ export class DynamoDbStorage implements IStorage {
           TableName: this.tableName,
           Item: {
             userName: { S: payload.userName },
-            age: { S: payload.age },
-            health: { S: payload.health },
-            happiness: { S: payload.happiness },
             retryCount: { N: `${payload.retryCount}` },
-            maxLifeCycles: { N: `${payload.maxLifeCycles}` },
+            recordLifeCycles: { N: `${payload.recordLifeCycles}` },
           },
         },
         (err: Error, data: any) => {
@@ -67,11 +64,8 @@ export class DynamoDbStorage implements IStorage {
               }
               return resolve({
                 userName: data.Item.userName.S,
-                health: data.Item.health.S,
-                happiness: data.Item.happiness.S,
-                age: data.Item.age.S,
                 retryCount: data.Item.retryCount.N,
-                maxLifeCycles: data.Item.maxLifeCycles.N,
+                recordLifeCycles: data.Item.recordLifeCycles.N,
               });
             }
           }

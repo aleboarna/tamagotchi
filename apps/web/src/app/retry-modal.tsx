@@ -1,13 +1,35 @@
 import { Fragment, useRef, useState } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
-
+export enum ModalReason {
+  failed,
+  passed,
+}
 export default function RetryModal(props: {
   isOpen: boolean;
   onRetryModal: () => void;
+  onNewCycle: () => void;
   onCloseModal: () => void;
+  modalReason: ModalReason;
 }) {
   const cancelButtonRef = useRef(null);
-
+  const buttonTextAction = {
+    [ModalReason.failed]: {
+      title: 'Mission failed',
+      description:
+        "Oh! Seems like you weren't careful enough. Wanna try\n" +
+        '                          again?',
+      buttonText: 'Try again',
+      action: props.onRetryModal,
+    },
+    [ModalReason.passed]: {
+      title: 'Great job!',
+      description:
+        'Your support and nurturing led to a new life being created. Wanna start\n' +
+        '                          again or continue?',
+      buttonText: 'Start a new cycle',
+      action: props.onNewCycle,
+    },
+  };
   return (
     <Transition.Root show={props.isOpen} as={Fragment}>
       <Dialog
@@ -42,18 +64,17 @@ export default function RetryModal(props: {
               <Dialog.Panel className="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg">
                 <div className="bg-white px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
                   <div className="sm:flex sm:items-start">
-                    <div className="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10"></div>
+                    <div className="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10" />
                     <div className="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left">
                       <Dialog.Title
                         as="h3"
                         className="text-base font-semibold leading-6 text-gray-900"
                       >
-                        Mission failed
+                        {buttonTextAction[props.modalReason].title}
                       </Dialog.Title>
                       <div className="mt-2">
                         <p className="text-sm text-gray-500">
-                          Oh! Seems like you weren't careful enough. Wanna try
-                          again?
+                          {buttonTextAction[props.modalReason].description}
                         </p>
                       </div>
                     </div>
@@ -63,9 +84,9 @@ export default function RetryModal(props: {
                   <button
                     type="button"
                     className="inline-flex w-full justify-center rounded-md bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-500 sm:ml-3 sm:w-auto"
-                    onClick={() => props.onRetryModal()}
+                    onClick={buttonTextAction[props.modalReason].action}
                   >
-                    Try again
+                    {buttonTextAction[props.modalReason].buttonText}
                   </button>
                   <button
                     type="button"

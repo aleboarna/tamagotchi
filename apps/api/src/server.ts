@@ -22,40 +22,26 @@ const schema = {
   type: 'object',
   properties: {
     userName: { type: 'string' },
-    age: { type: 'string' },
-    happiness: { type: 'string' },
-    health: { type: 'string' },
-    maxLifeCycles: { type: 'integer' },
+    recordLifeCycles: { type: 'integer' },
     retryCount: { type: 'integer' },
   },
-  required: [
-    'userName',
-    'age',
-    'happiness',
-    'health',
-    'maxLifeCycles',
-    'retryCount',
-  ],
+  required: ['userName', 'recordLifeCycles', 'retryCount'],
 };
 
 const validate = ajv.compile(schema);
 
 app.post(
-  `/v1/add`,
+  `/api/v1/add`,
   async (
     req: Request<never, never, EntryCreateRequestPayload>,
     res: Response
   ) => {
     if (validate(req.body)) {
-      const { userName, age, health, happiness, maxLifeCycles, retryCount } =
-        req.body;
+      const { userName, recordLifeCycles, retryCount } = req.body;
       try {
         await service.addEntry({
           userName,
-          age,
-          health,
-          happiness,
-          maxLifeCycles,
+          recordLifeCycles,
           retryCount,
         });
         res.status(200).json({});
@@ -77,16 +63,13 @@ app.post(
   }
 );
 
-app.get('/v1/user/:userName', async (req: Request, res: Response, next) => {
+app.get('/api/v1/user/:userName', async (req: Request, res: Response, next) => {
   const { userName } = req.params;
   const entry = await service.getEntry(userName);
   if (entry !== undefined) {
     const response: EntryGetResponsePayload = {
       userName: entry.userName,
-      age: entry.age,
-      happiness: entry.happiness,
-      health: entry.health,
-      maxLifeCycles: entry.maxLifeCycles,
+      recordLifeCycles: entry.recordLifeCycles,
       retryCount: entry.retryCount,
     };
     res.json(response);
