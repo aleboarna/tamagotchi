@@ -7,6 +7,7 @@
   "dependencies": {
     "@headlessui/react": "^1.7.15",
     "@swc/helpers": "~0.5.0",
+    "@tanstack/react-query": "^4.32.0",
     "@vendia/serverless-express": "^4.10.4",
     "ajv": "^8.12.0",
     "aws-sdk": "^2.1423.0",
