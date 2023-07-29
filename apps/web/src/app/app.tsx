@@ -9,7 +9,6 @@ import { GlobalSwitch } from './global-switch';
 import { EntryCreateRequestPayload } from '@tamagotchi/types';
 import axios, { AxiosResponse } from 'axios';
 import { useMutation } from 'react-query';
-import { env } from '@headlessui/react/dist/utils/env';
 import { ENVIRONMENT } from '../environments/environment';
 
 export function App() {
@@ -217,9 +216,10 @@ export function App() {
         <LevelBar level={age} name={'Age'} />
       </div>
       <div className={'flex flex-row justify-evenly'}>
-        <div>
-          leaderboard total tries {retryCount} lifecycles {recordLifeCycles}
-        </div>
+        <Leaderboard
+          retryCount={retryCount}
+          recordLifeCycles={recordLifeCycles}
+        />
         <div className={'w-1/2 pb-10'}>
           <modifiers.image />
         </div>
@@ -302,3 +302,15 @@ export function App() {
 }
 
 export default App;
+
+const Leaderboard = (props: {
+  retryCount: number;
+  recordLifeCycles: number;
+}) => {
+  return (
+    <div>
+      leaderboard total tries {props.retryCount} lifecycles{' '}
+      {props.recordLifeCycles}
+    </div>
+  );
+};
