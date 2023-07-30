@@ -8,3 +8,6 @@ export type EntryCreateRequestPayload = {
   readonly retryCount: number;
   readonly recordLifeCycles: number;
 };
+export type EntriesGetResponsePayload = {
+  readonly entries: EntryGetResponsePayload[];
+};

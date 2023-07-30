@@ -3,6 +3,6 @@
 
 export const ENVIRONMENT = {
   production: false,
-  API_URL: 'https://w3b8d0z8p8.execute-api.eu-central-1.amazonaws.com',
-  //  API_URL: 'http://localhost:3333',
+  // API_URL: 'https://w3b8d0z8p8.execute-api.eu-central-1.amazonaws.com',
+  API_URL: 'http://localhost:3333',
 };

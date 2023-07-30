@@ -1,6 +1,7 @@
 import express, { Application, NextFunction, Request, Response } from 'express';
 import { LogService } from './services/log-service';
 import {
+  EntriesGetResponsePayload,
   EntryCreateRequestPayload,
   EntryGetResponsePayload,
 } from '@tamagotchi/types';
@@ -68,10 +69,20 @@ app.get('/api/v1/user/:userName', async (req: Request, res: Response, next) => {
   const entry = await service.getEntry(userName);
   if (entry !== undefined) {
     const response: EntryGetResponsePayload = {
-      userName: entry.userName,
-      recordLifeCycles: entry.recordLifeCycles,
-      retryCount: entry.retryCount,
+      ...entry,
     };
+    res.json(response);
+  } else {
+    const error = new PlatformException(
+      ErrorTypes.APIErrorCodes.INVALID_REQUEST_PATH
+    );
+    res.status(error.status).json({ message: error.message, code: error.name });
+  }
+});
+app.get('/api/v1/leaderboard', async (req: Request, res: Response, next) => {
+  const entries = await service.getLeaderboard();
+  if (entries !== undefined) {
+    const response: EntriesGetResponsePayload = { entries };
     res.json(response);
   } else {
     const error = new PlatformException(

@@ -14,4 +14,7 @@ export class LogService {
   async getEntry(userName: string): Promise<IEntry | undefined> {
     return await this.storageService.getEntry(userName);
   }
+  async getLeaderboard(): Promise<IEntry[]> {
+    return await this.storageService.getLeaderboard();
+  }
 }

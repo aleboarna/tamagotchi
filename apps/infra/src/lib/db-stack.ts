@@ -19,7 +19,13 @@ export class DbStack extends cdk.Stack {
       {
         tableName: `${projectName}-users-${stackEnv}`,
         partitionKey: { name: 'userName', type: AttributeType.STRING },
+        timeToLiveAttribute: `ttl`,
       }
     );
+    db.addGlobalSecondaryIndex({
+      indexName: 'leaderboard-retryCount',
+      partitionKey: { name: 'retryCount', type: AttributeType.NUMBER },
+      sortKey: { name: 'userName', type: AttributeType.STRING },
+    });
   }
 }
