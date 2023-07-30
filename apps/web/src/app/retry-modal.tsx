@@ -1,16 +1,18 @@
 import { Fragment, useRef, useState } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
 export enum ModalReason {
+  initial,
   failed,
   passed,
 }
 export default function RetryModal(props: {
-  isOpen: boolean;
   resetFunction: (success: boolean) => void;
   onCloseModal: () => void;
   modalReason: ModalReason;
+  isOpenModal: boolean;
 }) {
   const cancelButtonRef = useRef(null);
+
   const buttonTextAction = {
     [ModalReason.failed]: {
       title: 'Mission failed',
@@ -18,19 +20,25 @@ export default function RetryModal(props: {
         "Oh! Seems like you weren't careful enough. Wanna try\n" +
         '                          again?',
       buttonText: 'Try again',
-      action: () => props.resetFunction(true),
+      action: () => props.resetFunction(false),
     },
     [ModalReason.passed]: {
       title: 'Great job!',
       description:
-        'Your support and nurturing led to a new life being created. Wanna start\n' +
-        '                          again or continue?',
+        'Superwoman thrived with your support! Wanna start\n' +
+        '                          again?',
       buttonText: 'Start a new cycle',
       action: () => props.resetFunction(true),
     },
+    [ModalReason.initial]: {
+      title: '',
+      description: '',
+      buttonText: '',
+      action: () => props.onCloseModal(),
+    },
   };
   return (
-    <Transition.Root show={props.isOpen} as={Fragment}>
+    <Transition.Root show={props.isOpenModal} as={Fragment}>
       <Dialog
         as="div"
         className="relative z-10"
@@ -90,7 +98,7 @@ export default function RetryModal(props: {
                   <button
                     type="button"
                     className="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto"
-                    onClick={() => props.onCloseModal()}
+                    onClick={props.onCloseModal}
                     ref={cancelButtonRef}
                   >
                     Cancel

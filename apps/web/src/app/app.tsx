@@ -16,8 +16,6 @@ import { ENVIRONMENT } from '../environments/environment';
 import { getLocalLeaderboard, Leaderboard } from './leaderboard';
 import { TalkingCrowd } from './crowd-messages';
 
-// 5. create story
-
 export function App() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -66,10 +64,6 @@ export function App() {
   const [happinessLevel, setHappinessLevel] = useState(
     Number(localStorage.getItem(`${userName}-happiness`)) || 100
   );
-  //used to know when to trigger dialog
-  const [isModalOpen, setIsModalOpen] = useState(
-    happinessLevel === 0 || healthLevel === 0
-  );
   //used to log age, only local storage
   const [age, setAge] = useState(
     Number(localStorage.getItem(`${userName}-age`)) || 3
@@ -85,6 +79,8 @@ export function App() {
   const [recordLifeCycles, setRecordLifeCycles] = useState(
     Number(localStorage.getItem(`${userName}-recordLifeCycles`)) || 1
   );
+  const [isOpenModal, setIsOpenModal] = useState(false);
+  const [modalState, setModalState] = useState(ModalReason.initial);
   //used to hold global leaderboard state
   const [globalLeaderboard, setGlobalLeaderboard] = useState<
     EntryGetResponsePayload[]
@@ -128,7 +124,8 @@ export function App() {
         clearInterval(healthTimer);
         clearInterval(happinessTimer);
         clearInterval(ageTimer);
-        setIsModalOpen(true);
+        setModalState(ModalReason.failed);
+        setIsOpenModal(true);
       } else {
         //decreases health level and stores new value in local storage
         setHealthLevel((prevState) => prevState - 1);
@@ -141,7 +138,8 @@ export function App() {
         clearInterval(healthTimer);
         clearInterval(happinessTimer);
         clearInterval(ageTimer);
-        setIsModalOpen(true);
+        setModalState(ModalReason.failed);
+        setIsOpenModal(true);
       } else {
         //decreases happiness level and stores new value in local storage
         setHappinessLevel((prevState) => prevState - 1);
@@ -152,10 +150,17 @@ export function App() {
       }
     }, 500 * modifiers.happinessModifier);
     const ageTimer = window.setInterval(() => {
+      if (ageRef.current === 30) {
+        clearInterval(healthTimer);
+        clearInterval(happinessTimer);
+        clearInterval(ageTimer);
+        setModalState(ModalReason.passed);
+        setIsOpenModal(true);
+      }
       //increases age and stores new value in local storage
       setAge((prevState) => prevState + 1);
       localStorage.setItem(`${userName}-age`, `${ageRef.current + 1}`);
-    }, 10000);
+    }, 8000);
 
     return () => {
       //clean up function to delete timers
@@ -211,13 +216,13 @@ export function App() {
         },
       });
     }
-  }, [toggleGlobal]);
+  }, [toggleGlobal, retryCount]);
   //only stores data in dynamodb after fetching it once
   useEffect(() => {
     if (toggleGlobal && !firstTimeGlobal) {
       saveMutation.mutate({ userName, retryCount, recordLifeCycles });
     }
-  }, [toggleGlobal, firstTimeGlobal]);
+  }, [toggleGlobal, firstTimeGlobal, retryCount]);
 
   //clean up state when user fails or wins
   const resetState = (success: boolean) => {
@@ -241,7 +246,8 @@ export function App() {
     } else {
       setMaxLifeCycles(1);
     }
-    setIsModalOpen(false);
+    setModalState(ModalReason.initial);
+    setIsOpenModal(false);
   };
 
   return (
@@ -261,9 +267,9 @@ export function App() {
       </div>
       <RetryModal
         resetFunction={resetState}
-        isOpen={isModalOpen}
-        onCloseModal={() => setIsModalOpen(false)}
-        modalReason={ModalReason.failed}
+        modalReason={modalState}
+        onCloseModal={() => setIsOpenModal(false)}
+        isOpenModal={isOpenModal}
       />
       <div
         className={'flex flex-col justify-evenly items-center pb-7 sm:flex-row'}
@@ -280,7 +286,7 @@ export function App() {
         <Leaderboard
           entries={toggleGlobal ? globalLeaderboard : localLeaderboard}
         />
-        <div className={' w-4/5 sm:w-1/3 pb-10 order-1 sm:order-1'}>
+        <div className={' w-4/5 sm:w-1/3 h-1/4 pb-10 order-1 sm:order-1'}>
           <modifiers.image />
         </div>
         <div className="w-4/5 sm:w-1/3 mx-auto my-auto order-2 sm:order-3 p-5">
@@ -294,8 +300,7 @@ export function App() {
           </p>
         </div>
       </div>
-
-      {healthLevel === 0 || happinessLevel === 0 ? (
+      {modalState !== ModalReason.initial ? (
         <div className={'flex flex-row justify-center my-4'}>
           <button
             className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full"
