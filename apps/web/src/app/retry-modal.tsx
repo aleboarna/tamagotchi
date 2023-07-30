@@ -6,8 +6,7 @@ export enum ModalReason {
 }
 export default function RetryModal(props: {
   isOpen: boolean;
-  onRetryModal: () => void;
-  onNewCycle: () => void;
+  resetFunction: (success: boolean) => void;
   onCloseModal: () => void;
   modalReason: ModalReason;
 }) {
@@ -19,7 +18,7 @@ export default function RetryModal(props: {
         "Oh! Seems like you weren't careful enough. Wanna try\n" +
         '                          again?',
       buttonText: 'Try again',
-      action: props.onRetryModal,
+      action: () => props.resetFunction(true),
     },
     [ModalReason.passed]: {
       title: 'Great job!',
@@ -27,7 +26,7 @@ export default function RetryModal(props: {
         'Your support and nurturing led to a new life being created. Wanna start\n' +
         '                          again or continue?',
       buttonText: 'Start a new cycle',
-      action: props.onNewCycle,
+      action: () => props.resetFunction(true),
     },
   };
   return (

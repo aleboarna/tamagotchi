@@ -68,7 +68,7 @@ export class DynamoDbStorage implements IStorage {
                 return resolve(undefined);
               }
               return resolve(
-                data.Items.sort((a, b) => a.retryCount.N - b.retryCount.N)
+                data.Items.sort((a, b) => b.retryCount.N - a.retryCount.N)
                   .slice(0, 10)
                   .map((item) => ({
                     userName: item.userName.S,

@@ -1,4 +1,37 @@
 import { EntryGetResponsePayload } from '@tamagotchi/types';
+//get leaderboard from local storage
+export const getLocalLeaderboard = (): EntryGetResponsePayload[] => {
+  const entries: EntryGetResponsePayload[] = [];
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i);
+    if (key && key.endsWith('-happiness')) {
+      const userName = key.split('-')[0];
+      const retryCount =
+        Number(localStorage.getItem(`${userName}-retryCount`)) || 1;
+      const recordLifeCycles =
+        Number(localStorage.getItem(`${userName}-recordLifeCycles`)) || 1;
+      entries.push({ userName, retryCount, recordLifeCycles });
+    }
+  }
+  return entries
+    .sort((a, b) => {
+      if (a.recordLifeCycles > b.recordLifeCycles) {
+        return -1;
+      } else if (a.recordLifeCycles < b.recordLifeCycles) {
+        return 1;
+      } else {
+        if (a.retryCount > b.retryCount) {
+          return -1;
+        } else if (a.retryCount < b.retryCount) {
+          return 1;
+        } else {
+          return 0;
+        }
+      }
+    })
+    .slice(0, 9);
+};
+
 export const Leaderboard = (props: { entries: EntryGetResponsePayload[] }) => {
   return (
     <div className="flex flex-col">

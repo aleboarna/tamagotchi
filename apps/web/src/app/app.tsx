@@ -4,7 +4,6 @@ import RetryModal, { ModalReason } from './retry-modal';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { getLifeStage } from './right-lifecycle';
 import { getStageProps } from './stage-modifier';
-import { ReactComponent as People } from '../assets/people.svg';
 import { GlobalSwitch } from './global-switch';
 import {
   EntriesGetResponsePayload,
@@ -14,13 +13,11 @@ import {
 import axios, { AxiosResponse } from 'axios';
 import { useMutation } from 'react-query';
 import { ENVIRONMENT } from '../environments/environment';
-import { Leaderboard } from './leaderboard';
-// 1. check if when failed you can still save if record
-// 2. make function out of crowd
-// 3. statefully close dialog when support
-// 4. change text for different life stage
+import { getLocalLeaderboard, Leaderboard } from './leaderboard';
+import { TalkingCrowd } from './crowd-messages';
+
 // 5. create story
-// 6.
+
 export function App() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -103,6 +100,7 @@ export function App() {
   //increase health on support
   const increaseHealth = () => {
     setHealthLevel(healthLevel + 5);
+    setIsVisible(false);
   };
   //increase happiness on empower
   const increaseHappiness = () => {
@@ -174,38 +172,7 @@ export function App() {
     // Clean up the timer when the component is unmounted
     return () => clearInterval(timer);
   }, []);
-  //get leaderboard from local storage
-  const getLocalLeaderboard = (): EntryGetResponsePayload[] => {
-    const entries: EntryGetResponsePayload[] = [];
-    for (let i = 0; i < localStorage.length; i++) {
-      const key = localStorage.key(i);
-      if (key && key.endsWith('-happiness')) {
-        const userName = key.split('-')[0];
-        const retryCount =
-          Number(localStorage.getItem(`${userName}-retryCount`)) || 1;
-        const recordLifeCycles =
-          Number(localStorage.getItem(`${userName}-recordLifeCycles`)) || 1;
-        entries.push({ userName, retryCount, recordLifeCycles });
-      }
-    }
-    return entries
-      .sort((a, b) => {
-        if (a.recordLifeCycles > b.recordLifeCycles) {
-          return -1;
-        } else if (a.recordLifeCycles < b.recordLifeCycles) {
-          return 1;
-        } else {
-          if (a.retryCount > b.retryCount) {
-            return -1;
-          } else if (a.retryCount < b.retryCount) {
-            return 1;
-          } else {
-            return 0;
-          }
-        }
-      })
-      .slice(0, 9);
-  };
+
   useEffect(() => {
     setLocalLeaderboard(getLocalLeaderboard());
   }, [retryCount]);
@@ -251,26 +218,17 @@ export function App() {
       saveMutation.mutate({ userName, retryCount, recordLifeCycles });
     }
   }, [toggleGlobal, firstTimeGlobal]);
-  //used when the user fails
-  const onRetryModal = () => {
-    commonReset();
-    setMaxLifeCycles(1);
-  };
+
   //clean up state when user fails or wins
-  const commonReset = () => {
+  const resetState = (success: boolean) => {
     setHappinessLevel(100);
     setHealthLevel(100);
     setAge(3);
     localStorage.setItem(`${userName}-happiness`, '100');
     localStorage.setItem(`${userName}-health`, '100');
     localStorage.setItem(`${userName}-age`, '3');
-    setIsModalOpen(false);
     setRetryCount((prevState) => prevState + 1);
     localStorage.setItem(`${userName}-retryCount`, `${retryCount}`);
-  };
-  //sets up state when user wins
-  const onNewCycle = () => {
-    commonReset();
     if (maxLifeCycles + 1 > recordLifeCycles) {
       setRecordLifeCycles((prevState) => prevState + 1);
       localStorage.setItem(
@@ -278,8 +236,14 @@ export function App() {
         `${recordLifeCycles}`
       );
     }
-    setMaxLifeCycles((prevState) => prevState + 1);
+    if (success) {
+      setMaxLifeCycles((prevState) => prevState + 1);
+    } else {
+      setMaxLifeCycles(1);
+    }
+    setIsModalOpen(false);
   };
+
   //used to set the toggle
   const setGlobalToggle = () => {
     setToggleGlobal((prevState) => !prevState);
@@ -303,9 +267,8 @@ export function App() {
         </Link>
       </div>
       <RetryModal
-        onRetryModal={onRetryModal}
+        resetFunction={resetState}
         isOpen={isModalOpen}
-        onNewCycle={onNewCycle}
         onCloseModal={() => setIsModalOpen(false)}
         modalReason={ModalReason.failed}
       />
@@ -328,7 +291,7 @@ export function App() {
         <div>
           <button
             className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full"
-            onClick={onRetryModal}
+            onClick={() => resetState(false)}
           >
             Try again
           </button>
@@ -349,52 +312,7 @@ export function App() {
           </button>
         </div>
       )}
-      <div className={'relative bottom-0 flex flex-row w-full '}>
-        <div className={`  absolute w-full flex justify-evenly`}>
-          <p
-            className={`text-xl font-bold italic  ease-in-out duration-100 delay-300  ${
-              isVisible ? 'opacity-100' : 'opacity-0'
-            }`}
-          >
-            Stop making a mess
-          </p>
-          <p
-            className={`text-xl font-bold italic  ease-in-out duration-100 delay-200  ${
-              !isVisible ? 'opacity-100' : 'opacity-0'
-            }`}
-          >
-            Why aren't you listening
-          </p>
-          <p
-            className={`text-xl font-bold italic ease-in-out duration-100 delay-100 ${
-              isVisible ? 'opacity-100' : 'opacity-0'
-            }`}
-          >
-            You're a cry baby
-          </p>
-          <p
-            className={`text-xl font-bold italic ease-in-out duration-100 ${
-              !isVisible ? 'opacity-100' : 'opacity-0'
-            }`}
-          >
-            You talk too much
-          </p>
-          <p
-            className={`text-xl font-bold italic ease-in-out duration-100 delay-200  ${
-              isVisible ? 'opacity-100' : 'opacity-0'
-            }`}
-          >
-            Why can't you be more like your sister
-          </p>
-        </div>
-        <People></People>
-        <People></People>
-        <People></People>
-        <People></People>
-        <People></People>
-        <People></People>
-        <People></People>
-      </div>
+      <TalkingCrowd isVisible={isVisible} lifeStage={getLifeStage(age)} />
     </div>
   );
 }
