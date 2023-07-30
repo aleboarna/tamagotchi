@@ -2,7 +2,6 @@ import { ReactComponent } from '*.svg';
 import { LifeStage } from './right-lifecycle';
 import { ReactComponent as Superwoman } from '../assets/super-woman.svg';
 import { ReactComponent as Supergirl } from '../assets/super-girl.svg';
-import { ReactComponent as Superpregnant } from '../assets/super-pregnant.svg';
 
 export type StageModifier = {
   image: typeof ReactComponent;
@@ -24,13 +23,6 @@ export const getStageProps = (stage: LifeStage): StageModifier => {
         image: () => <Superwoman className="container" />,
         happinessModifier: 2,
         healthModifier: 3,
-      };
-    }
-    case LifeStage.pregnant: {
-      return {
-        image: () => <Superpregnant className="container" />,
-        happinessModifier: 5,
-        healthModifier: 4,
       };
     }
     default: {

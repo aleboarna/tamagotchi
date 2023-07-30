@@ -1,6 +1,6 @@
 export const LevelBar = (props: { level: number; name: string }) => {
   return (
-    <div className={'w-1/4'}>
+    <div className={'w-3/5 sm:w-1/5 '}>
       <div className="flex justify-between mb-1">
         <span className="text-base font-medium text-blue-700 ">
           {props.name}

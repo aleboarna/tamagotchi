@@ -244,21 +244,14 @@ export function App() {
     setIsModalOpen(false);
   };
 
-  //used to set the toggle
-  const setGlobalToggle = () => {
-    setToggleGlobal((prevState) => !prevState);
-  };
-
   return (
-    <div className={'flex flex-col items-center justify-between min-h-screen'}>
-      <div
-        className={'w-full flex flex-row justify-between h-10 mt-1 pl-1 pr-1'}
-      >
+    <div className={'w-full h-full min-h-screen flex-col flex justify-between'}>
+      <div className={'flex flex-row justify-between items-center px-2'}>
         <GlobalSwitch
           toggleGlobal={toggleGlobal}
-          setToggleGlobal={setGlobalToggle}
+          setToggleGlobal={() => setToggleGlobal((prevState) => !prevState)}
         />
-        <h1 className={' text-xl pt-4 pb-10'}>EmpowHER</h1>
+        <h1 className={' text-2xl font-bold pt-4 pb-10'}>EmpowHER</h1>
         <Link
           className="bg-transparent hover:bg-blue-500 text-blue-700 font-semibold hover:text-white py-2 px-4 border border-blue-500 hover:border-transparent rounded"
           to={'/login'}
@@ -272,23 +265,38 @@ export function App() {
         onCloseModal={() => setIsModalOpen(false)}
         modalReason={ModalReason.failed}
       />
-      <div className={'flex justify-evenly w-2/5 pb-7'}>
+      <div
+        className={'flex flex-col justify-evenly items-center pb-7 sm:flex-row'}
+      >
         <LevelBar level={healthLevel} name={'Health'} />
         <LevelBar level={happinessLevel} name={'Happiness'} />
         <LevelBar level={age} name={'Age'} />
       </div>
-      <div className={'flex flex-row justify-evenly'}>
+      <div
+        className={
+          'w-full flex flex-col sm:flex-row justify-evenly items-center mx-5 '
+        }
+      >
         <Leaderboard
           entries={toggleGlobal ? globalLeaderboard : localLeaderboard}
         />
-        <div className={'w-1/2 pb-10'}>
+        <div className={' w-4/5 sm:w-1/3 pb-10 order-1 sm:order-1'}>
           <modifiers.image />
         </div>
-        <div>story</div>
+        <div className="w-4/5 sm:w-1/3 mx-auto my-auto order-2 sm:order-3 p-5">
+          <p className="text-lg text-center ">
+            Meet EmpowHER, a courageous girl determined to make a difference!
+            With your unwavering support, she finds her strength to stand tall
+            against the crowd. Your empowering choices lead her on a journey of
+            growth, transforming her into the unstoppable Superwoman. Together,
+            you conquer challenges and create a world of equality and
+            inspiration!
+          </p>
+        </div>
       </div>
 
       {healthLevel === 0 || happinessLevel === 0 ? (
-        <div>
+        <div className={'flex flex-row justify-center my-4'}>
           <button
             className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full"
             onClick={() => resetState(false)}
@@ -297,15 +305,15 @@ export function App() {
           </button>
         </div>
       ) : (
-        <div className={'flex flex-row justify-around w-1/4'}>
+        <div className={'flex flex-row justify-center w-full my-4'}>
           <button
-            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full"
+            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 mx-4 rounded-full"
             onClick={healthLevel < 96 ? increaseHealth : undefined}
           >
             Support
           </button>
           <button
-            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full"
+            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 mx-4 rounded-full"
             onClick={happinessLevel < 96 ? increaseHappiness : undefined}
           >
             Empower

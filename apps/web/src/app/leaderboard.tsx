@@ -34,7 +34,7 @@ export const getLocalLeaderboard = (): EntryGetResponsePayload[] => {
 
 export const Leaderboard = (props: { entries: EntryGetResponsePayload[] }) => {
   return (
-    <div className="flex flex-col">
+    <div className="w-4/5 sm:w-1/3 flex flex-col order-3 sm:order-1 sm:px-4">
       <div className="flex justify-between font-bold text-l mb-4">
         <div className="w-1/3">Name</div>
         <div className="w-1/3">Total Tries</div>
