@@ -58,7 +58,7 @@ export const TalkingCrowd = (props: {
   lifeStage: LifeStage;
 }) => {
   return (
-    <div className={'flex flex-col w-full h-1/10 hidden sm:flex'}>
+    <div className={'flex flex-col w-full h-1/10 hidden sm:flex order-5'}>
       <MessageList isVisible={props.isVisible} lifeStage={props.lifeStage} />
       <div className={'flex flex-row pt-10 '}>
         <People className={'object-contain w-full h-full'} />

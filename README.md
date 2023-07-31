@@ -1,5 +1,6 @@
 # Tamagotchi
 
+Tamagotchi like fullstack web app. It is deployed [here](https://empowher.zone).
 ## Table of Contents
 
 * [Description](#description)

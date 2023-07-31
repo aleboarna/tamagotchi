@@ -252,7 +252,9 @@ export function App() {
 
   return (
     <div className={'w-full h-full min-h-screen flex-col flex justify-between'}>
-      <div className={'flex flex-row justify-between items-center px-2'}>
+      <div
+        className={'flex flex-row justify-between items-center px-2 order-1'}
+      >
         <GlobalSwitch
           toggleGlobal={toggleGlobal}
           setToggleGlobal={() => setToggleGlobal((prevState) => !prevState)}
@@ -272,7 +274,9 @@ export function App() {
         isOpenModal={isOpenModal}
       />
       <div
-        className={'flex flex-col justify-evenly items-center pb-7 sm:flex-row'}
+        className={
+          'flex flex-col justify-evenly items-center pb-7 sm:flex-row order-2'
+        }
       >
         <LevelBar level={healthLevel} name={'Health'} />
         <LevelBar level={happinessLevel} name={'Happiness'} />
@@ -280,7 +284,7 @@ export function App() {
       </div>
       <div
         className={
-          'w-full flex flex-col sm:flex-row justify-evenly items-center mx-5 '
+          'w-full flex flex-col sm:flex-row justify-evenly items-center mx-5 order-4 sm:order-3'
         }
       >
         <Leaderboard
@@ -301,7 +305,7 @@ export function App() {
         </div>
       </div>
       {modalState !== ModalReason.initial ? (
-        <div className={'flex flex-row justify-center my-4'}>
+        <div className={'flex flex-row justify-center my-4 order-3 sm:order-4'}>
           <button
             className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full"
             onClick={() => resetState(false)}
@@ -310,7 +314,11 @@ export function App() {
           </button>
         </div>
       ) : (
-        <div className={'flex flex-row justify-center w-full my-4'}>
+        <div
+          className={
+            'flex flex-row justify-center w-full my-4 order-3 sm:order-4'
+          }
+        >
           <button
             className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 mx-4 rounded-full"
             onClick={healthLevel < 96 ? increaseHealth : undefined}
